@@ -1,4 +1,4 @@
-package e01;
+package clase.e01;
 
 import java.sql.*;
 
