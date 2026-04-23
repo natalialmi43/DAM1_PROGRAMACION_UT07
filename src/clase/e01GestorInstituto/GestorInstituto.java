@@ -1,4 +1,4 @@
-package clase.e01;
+package clase.e01GestorInstituto;
 
 import java.sql.*;
 
