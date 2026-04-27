@@ -70,9 +70,7 @@ public class Main {
             }
         }
 
-        try (BufferedWriter escritor =new BufferedWriter(new File (archivo)) ){
 
-        }
 
 
     }
