@@ -26,7 +26,7 @@ public class CiudadDAO {
             try (ResultSet resultSet = preparedStatement.executeQuery()){
                 while (resultSet.next()) {
                     String nombreCiudad = resultSet.getString("c.nombre");
-                    int poblacion =resultSet.getInt("poblacion");
+                    int poblacion =resultSet.getInt("c.poblacion");
                     String nombrePais =  resultSet.getString("p.nombre");
 
                     String textoFormateado  = String.format("Ciudad: %s | País: %s | Población: %d habitantes",
@@ -53,12 +53,12 @@ public class CiudadDAO {
 
             try (PreparedStatement preparedStatementRestar = connection.prepareStatement(sqlRestar);
                  PreparedStatement preparedStatementSumar = connection.prepareStatement(sqlSumar)) {
-                preparedStatementRestar.setString(1, origen);
-                preparedStatementRestar.setInt(2, personas);
+                preparedStatementRestar.setInt(1, personas);
+                preparedStatementRestar.setString(2, origen);
                 preparedStatementRestar.executeUpdate();
 
-                preparedStatementSumar.setString(1, destino);
-                preparedStatementSumar.setInt(2, personas);
+                preparedStatementSumar.setInt(1, personas);
+                preparedStatementSumar.setString(2, destino);
                 preparedStatementSumar.executeUpdate();
             }
 
@@ -81,22 +81,39 @@ public class CiudadDAO {
         }
     }
 
-    pu
 
 
+    public int calcularPoblacionContinente(String continente) {
+        int totalPoblacion = 0;
+        String sql = "{call calcular_poblacion_continente(?, ?)}";
 
-    /*
-    Este método debe conectarse a la base de datos, buscar todas las ciudades que
-    pertenezcan al idPais pasado por parámetro, instanciar un objeto Ciudad por cada
-    fila del ResultSet, guardarlos en un ArrayList y devolver esa lista
-     */
+        try (CallableStatement callableStatement = connection.prepareCall(sql)) {
+            //Se le pasa el continente
+            callableStatement.setString(1, continente);
+            //Aqui se le dice que el segundo ? es el numero que devuelve cd pasamos el continente
+            callableStatement.registerOutParameter(2, Types.INTEGER);
+            //Se ejecuta
+            callableStatement.execute();
+
+            //Le pasamos el numero  que devuelve TRAS ejecutar
+            totalPoblacion =  callableStatement.getInt(2); // Recuperar el resultado devuelto por MySQL
+
+        } catch (SQLException e){
+            System.out.println("Error al buscar");
+        }
+
+        return totalPoblacion;
+
+    }
+
+
 
     public List<Ciudad> obtenerCiudadesPorPais(int idPais){
 
         List<Ciudad> ciudadesPorPais = new ArrayList<>();
 
-        String sql = "select c.id, c.nombre, c.poblacion, c.id_pais \n" +
-                "from ciudades c join paises p \n" +
+        String sql = "select c.id as id, c.nombre as nombre, c.poblacion as poblacion, c.id_pais as id_pais \n" +
+                "from ciudades c join paises p on c.id_pais = p.id \n" +
                 "where p.id = ?";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)){
